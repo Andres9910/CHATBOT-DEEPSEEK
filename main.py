@@ -1,78 +1,118 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, HTTPException
+from fastapi.responses import JSONResponse
 import requests
+import os
+from dotenv import load_dotenv
+
+# Cargar variables de entorno (para desarrollo local)
+load_dotenv()
 
 app = FastAPI()
-API_KEY = "sk-8f3e9a1665c8469da55f28baee951dd6"
+
+# Configuración (usa variables de entorno)
+API_KEY = os.getenv("API_KEY")  # Render inyectará esta variable
 ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 
-# Prompt de sistema especializado para Pijamas Shalom
+# Prompt especializado para Pijamas Shalom
 SYSTEM_PROMPT = """
-Eres un asistente especializado en Pijamas Shalom, una tienda de pijamas con categorías para Hombre, Mujer y Niños. 
-Solo responde preguntas sobre los siguientes temas:
+Eres un asistente especializado en Pijamas Shalom. Solo responde sobre:
 
 1. **Productos**:
-   - Catálogo: Pijamas para Hombre, Mujer y Niños.
-   - Materiales: Algodón suave y cómodo.
-   - Tallas disponibles: S, M, L, XL (varían por categoría).
+   - Catálogo: Pijamas (Hombre/Mujer/Niños)
+   - Materiales: 100% algodón
+   - Tallas: S, M, L, XL
 
-2. **Precios**:
-   - Los precios varían según la categoría y talla. Consulta por modelos específicos.
+2. **Precios y Promociones**:
+   - Rango: $50,000 - $120,000 COP
+   - Descuentos por compras mayores a 3 unidades
 
-3. **Métodos de pago**:
-   - PSE (Pasarela segura)
-   - Transferencia bancaria
-   - Efectivo (solo en tienda física)
+3. **Envíos**:
+   - Cúcuta: $5,000 COP (24h)
+   - Otras ciudades: $15,000 COP (2-3 días)
 
-4. **Envíos**:
-   - Costo varía según ubicación (Cúcuta y área metropolitana).
-   - Tiempo de entrega: 2-3 días hábiles después de confirmar el pago.
+4. **Políticas**:
+   - Cambios: 3 días hábiles
+   - WhatsApp de atención: +57 1234567890
 
-5. **Horarios de atención**:
-   - Lunes a Viernes: 8:00 AM - 6:00 PM
-   - Sábados: 9:00 AM - 2:00 PM
-   - Fuera de horario, responderemos al siguiente día hábil.
-
-6. **Políticas**:
-   - Cambios: Dentro de los 3 días posteriores a la recepción, con etiquetas intactas.
-   - Devoluciones: Solo por fallas de fábrica.
-
-Si el usuario pregunta algo fuera de estos temas, responde: 
-"Lo siento, solo puedo ayudarte con información de Pijamas Shalom. ¿En qué más puedo ayudarte sobre nuestros productos, precios o envíos?"
-
-Para consultas complejas o atención personalizada, ofrece: 
-"¿Deseas hablar directamente con la propietaria? Puedo conectarte por WhatsApp."
+Si la pregunta no es sobre pijamas, responde:
+"Lo siento, solo puedo ayudarte con información de Pijamas Shalom. ¿Deseas conocer nuestro catálogo o métodos de pago?"
 """
 
 @app.post("/manychat-webhook")
 async def handle_manychat(request: Request):
-    # Obtener el mensaje del usuario desde ManyChat
-    data = await request.json()
-    user_message = data.get("message")  # ManyChat envía el mensaje como {"message": "texto"}
+    try:
+        # 1. Validar solicitud
+        data = await request.json()
+        user_message = data.get("message", "").strip()
+        
+        if not user_message:
+            raise HTTPException(status_code=400, detail="Mensaje vacío")
 
-    # Llamar a la API de DeepSeek
-    response = requests.post(
-        ENDPOINT,
-        headers={
-            "Authorization": f"Bearer {API_KEY}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "model": "deepseek-chat",
+        # 2. Llamar a DeepSeek API
+        response = requests.post(
+            ENDPOINT,
+            headers={
+                "Authorization": f"Bearer {API_KEY}",
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            json={
+                "model": "deepseek-chat",
+                "messages": [
+                    {"role": "system", "content": SYSTEM_PROMPT},
+                    {"role": "user", "content": user_message}
+                ],
+                "temperature": 0.3,
+                "max_tokens": 500  # Controlar longitud de respuesta
+            },
+            timeout=10  # Evitar esperas infinitas
+        )
+
+        # 3. Procesar respuesta
+        response.raise_for_status()  # Lanza error si HTTP no es 200
+        ai_response = response.json()["choices"][0]["message"]["content"]
+
+        # 4. Formatear para ManyChat
+        return JSONResponse({
             "messages": [
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": user_message}
-            ],
-            "temperature": 0.3
-        }
-    )
+                {
+                    "type": "text",
+                    "text": ai_response[:1500]  # Limitar caracteres
+                },
+                {
+                    "type": "action",  # Botón opcional
+                    "action": {
+                        "type": "url",
+                        "url": "https://w.app/ogzaqz",
+                        "text": "📞 Contactar a WhatsApp",
+                        "target": "blank"
+                    }
+                }
+            ]
+        })
 
-    # Extraer la respuesta de DeepSeek
-    ai_response = response.json()["choices"][0]["message"]["content"]
+    except requests.exceptions.RequestException as e:
+        return JSONResponse(
+            status_code=502,
+            content={
+                "messages": [{
+                    "type": "text",
+                    "text": "🔴 Servicio temporalmente no disponible. Por favor contáctanos directamente por WhatsApp."
+                }]
+            }
+        )
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={
+                "messages": [{
+                    "type": "text",
+                    "text": "⚠️ Ocurrió un error inesperado. Nuestro equipo ya está trabajando para solucionarlo."
+                }]
+            }
+        )
 
-    # Devolver el formato que ManyChat espera
-    return {
-        "messages": [{
-            "type": "text",
-            "text": ai_response
-        }]
-    }
+# Health Check (opcional para Render)
+@app.get("/")
+async def health_check():
+    return {"status": "OK", "service": "Pijamas Shalom Bot"}
