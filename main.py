@@ -47,12 +47,14 @@ async def handle_manychat(request: Request):
         user_message = data.get("message", "").strip()
 
         if not user_message:
-            return JSONResponse(
-                content={"messages": [{"type": "text", "text": "🔍 Por favor envía un mensaje válido."}]},
-                status_code=400
-            )
+            return {
+                "messages": [{
+                    "type": "text",
+                    "text": "🔍 Por favor envía un mensaje válido."
+                }]
+            }
 
-        # Llamada a la API de DeepSeek
+        # Llamar a DeepSeek
         response = requests.post(
             ENDPOINT,
             headers={
@@ -75,55 +77,40 @@ async def handle_manychat(request: Request):
         response.raise_for_status()
         ai_response = response.json()["choices"][0]["message"]["content"]
 
-        # Respuesta formateada para ManyChat
-        return JSONResponse({
+        # RESPUESTA SIN JSONResponse → compatible con ManyChat
+        return {
             "messages": [
                 {
                     "type": "text",
                     "text": ai_response[:1500]
-                },
-                {
-                    "type": "action",
-                    "action": {
-                        "type": "url",
-                        "url": WHATSAPP_URL,
-                        "text": "💬 Hablar con asesor",
-                        "target": "blank"
-                    }
                 }
             ]
-        })
+        }
 
     except requests.exceptions.Timeout:
-        return JSONResponse(
-            status_code=504,
-            content={
-                "messages": [{
-                    "type": "text",
-                    "text": "⏳ El servicio está ocupado. Por favor intenta más tarde o escríbenos a WhatsApp."
-                }]
-            }
-        )
+        return {
+            "messages": [{
+                "type": "text",
+                "text": "⏳ El servicio está ocupado. Intenta más tarde o contáctanos por WhatsApp."
+            }]
+        }
+
     except requests.exceptions.RequestException:
-        return JSONResponse(
-            status_code=502,
-            content={
-                "messages": [{
-                    "type": "text",
-                    "text": "🔴 No pudimos procesar tu solicitud. Contacta a soporte vía WhatsApp."
-                }]
-            }
-        )
+        return {
+            "messages": [{
+                "type": "text",
+                "text": "🔴 No pudimos procesar tu solicitud. Escríbenos por WhatsApp."
+            }]
+        }
+
     except Exception:
-        return JSONResponse(
-            status_code=500,
-            content={
-                "messages": [{
-                    "type": "text",
-                    "text": "⚠️ Ocurrió un error inesperado. Puedes escribirnos directamente por WhatsApp."
-                }]
-            }
-        )
+        return {
+            "messages": [{
+                "type": "text",
+                "text": "⚠️ Ocurrió un error inesperado. Puedes escribirnos por WhatsApp."
+            }]
+        }
+
 
 # Health Check para Render
 @app.get("/")
