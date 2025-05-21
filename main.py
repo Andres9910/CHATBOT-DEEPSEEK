@@ -1,54 +1,58 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 import requests
 import os
 from dotenv import load_dotenv
 
-# Cargar variables de entorno (para desarrollo local)
+# Cargar variables de entorno
 load_dotenv()
 
 app = FastAPI()
 
-# Configuración (usa variables de entorno)
-API_KEY = os.getenv("API_KEY")  # Render inyectará esta variable
+# Configuración
+API_KEY = os.getenv("API_KEY")
 ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
+WHATSAPP_URL = "https://w.app/ogzaqz"  # Personaliza tu enlace corto
 
-# Prompt especializado para Pijamas Shalom
-SYSTEM_PROMPT = """
-Eres un asistente especializado en Pijamas Shalom. Solo responde sobre:
+# Prompt del sistema
+SYSTEM_PROMPT = f"""
+Eres el asistente de Pijamas Shalom. Responde SOLO sobre:
 
 1. **Productos**:
-   - Catálogo: Pijamas (Hombre/Mujer/Niños)
-   - Materiales: 100% algodón
-   - Tallas: S, M, L, XL
+   - Pijamas para Hombre, Mujer y Niños
+   - Material: 100% algodón
+   - Tallas disponibles: S, M, L, XL
 
 2. **Precios y Promociones**:
-   - Rango: $50,000 - $120,000 COP
+   - Desde $50,000 COP
    - Descuentos por compras mayores a 3 unidades
 
 3. **Envíos**:
-   - Cúcuta: $5,000 COP (24h)
-   - Otras ciudades: $15,000 COP (2-3 días)
+   - Cúcuta: $5,000 COP (Entrega en 24h)
+   - Resto del país: $15,000 COP (Entrega en 2-3 días)
 
-4. **Políticas**:
-   - Cambios: 3 días hábiles
-   - WhatsApp de atención: +57 1234567890
+4. **Políticas y Contacto**:
+   - Cambios: hasta 3 días hábiles después de la entrega
+   - Contacto por WhatsApp: {WHATSAPP_URL}
+   - Atención al cliente: Lunes a Viernes, 8:00am - 6:00pm
 
-Si la pregunta no es sobre pijamas, responde:
-"Lo siento, solo puedo ayudarte con información de Pijamas Shalom. ¿Deseas conocer nuestro catálogo o métodos de pago?"
+Si la pregunta no está relacionada, responde:
+"¿En qué más puedo ayudarte sobre nuestros pijamas? 😊"
 """
 
 @app.post("/manychat-webhook")
 async def handle_manychat(request: Request):
     try:
-        # 1. Validar solicitud
         data = await request.json()
         user_message = data.get("message", "").strip()
-        
-        if not user_message:
-            raise HTTPException(status_code=400, detail="Mensaje vacío")
 
-        # 2. Llamar a DeepSeek API
+        if not user_message:
+            return JSONResponse(
+                content={"messages": [{"type": "text", "text": "🔍 Por favor envía un mensaje válido."}]},
+                status_code=400
+            )
+
+        # Llamada a la API de DeepSeek
         response = requests.post(
             ENDPOINT,
             headers={
@@ -63,56 +67,70 @@ async def handle_manychat(request: Request):
                     {"role": "user", "content": user_message}
                 ],
                 "temperature": 0.3,
-                "max_tokens": 500  # Controlar longitud de respuesta
+                "max_tokens": 300
             },
-            timeout=10  # Evitar esperas infinitas
+            timeout=10
         )
 
-        # 3. Procesar respuesta
-        response.raise_for_status()  # Lanza error si HTTP no es 200
+        response.raise_for_status()
         ai_response = response.json()["choices"][0]["message"]["content"]
 
-        # 4. Formatear para ManyChat
+        # Respuesta formateada para ManyChat
         return JSONResponse({
             "messages": [
                 {
                     "type": "text",
-                    "text": ai_response[:1500]  # Limitar caracteres
+                    "text": ai_response[:1500]
                 },
                 {
-                    "type": "action",  # Botón opcional
+                    "type": "action",
                     "action": {
                         "type": "url",
-                        "url": "https://w.app/ogzaqz",
-                        "text": "📞 Contactar a WhatsApp",
+                        "url": WHATSAPP_URL,
+                        "text": "💬 Hablar con asesor",
                         "target": "blank"
                     }
                 }
             ]
         })
 
-    except requests.exceptions.RequestException as e:
+    except requests.exceptions.Timeout:
+        return JSONResponse(
+            status_code=504,
+            content={
+                "messages": [{
+                    "type": "text",
+                    "text": "⏳ El servicio está ocupado. Por favor intenta más tarde o escríbenos a WhatsApp."
+                }]
+            }
+        )
+    except requests.exceptions.RequestException:
         return JSONResponse(
             status_code=502,
             content={
                 "messages": [{
                     "type": "text",
-                    "text": "🔴 Servicio temporalmente no disponible. Por favor contáctanos directamente por WhatsApp."
+                    "text": "🔴 No pudimos procesar tu solicitud. Contacta a soporte vía WhatsApp."
                 }]
             }
         )
-    except Exception as e:
+    except Exception:
         return JSONResponse(
             status_code=500,
             content={
                 "messages": [{
                     "type": "text",
-                    "text": "⚠️ Ocurrió un error inesperado. Nuestro equipo ya está trabajando para solucionarlo."
+                    "text": "⚠️ Ocurrió un error inesperado. Puedes escribirnos directamente por WhatsApp."
                 }]
             }
         )
 
-# Health Check (opcional para Render)
+# Health Check para Render
 @app.get("/")
 async def health_check():
-    return {"status": "OK", "service": "Pijamas Shalom Bot"}
+    return {"status": "active", "service": "Pijamas Shalom Bot"}
+
+# Keep-Alive endpoint
+@app.get("/keep-alive")
+async def keep_alive():
+    return {"status": "keep-alive triggered"}
