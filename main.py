@@ -12,7 +12,7 @@ app = FastAPI()
 # Configuración
 API_KEY = os.getenv("API_KEY")
 ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
-WHATSAPP_URL = "https://w.app/ogzaqz"  # Personaliza tu enlace corto
+WHATSAPP_URL = "https://w.app/ogzaqz"  # Enlace corto personalizado
 
 # Prompt del sistema
 SYSTEM_PROMPT = f"""
@@ -52,7 +52,7 @@ async def handle_manychat(request: Request):
                 status_code=400
             )
 
-        # Llamada a la API de DeepSeek
+        # Llamada a DeepSeek
         response = requests.post(
             ENDPOINT,
             headers={
@@ -75,62 +75,54 @@ async def handle_manychat(request: Request):
         response.raise_for_status()
         ai_response = response.json()["choices"][0]["message"]["content"]
 
-        # Respuesta formateada para ManyChat
-        return JSONResponse({
+        # Estructura compatible con ManyChat
+        return {
             "messages": [
                 {
                     "type": "text",
-                    "text": ai_response[:1500]
+                    "text": ai_response[:1500]  # Truncar si es necesario
                 },
                 {
-                    "type": "action",
-                    "action": {
-                        "type": "url",
-                        "url": WHATSAPP_URL,
-                        "text": "💬 Hablar con asesor",
-                        "target": "blank"
-                    }
+                    "type": "button",
+                    "buttons": [
+                        {
+                            "type": "url",
+                            "caption": "💬 Hablar con asesor",
+                            "url": WHATSAPP_URL
+                        }
+                    ]
                 }
             ]
-        })
+        }
 
     except requests.exceptions.Timeout:
-        return JSONResponse(
-            status_code=504,
-            content={
-                "messages": [{
-                    "type": "text",
-                    "text": "⏳ El servicio está ocupado. Por favor intenta más tarde o escríbenos a WhatsApp."
-                }]
-            }
-        )
+        return {
+            "messages": [{
+                "type": "text",
+                "text": "⏳ El servicio está ocupado. Por favor intenta más tarde o escríbenos a WhatsApp."
+            }]
+        }
     except requests.exceptions.RequestException:
-        return JSONResponse(
-            status_code=502,
-            content={
-                "messages": [{
-                    "type": "text",
-                    "text": "🔴 No pudimos procesar tu solicitud. Contacta a soporte vía WhatsApp."
-                }]
-            }
-        )
+        return {
+            "messages": [{
+                "type": "text",
+                "text": "🔴 No pudimos procesar tu solicitud. Contacta a soporte vía WhatsApp."
+            }]
+        }
     except Exception:
-        return JSONResponse(
-            status_code=500,
-            content={
-                "messages": [{
-                    "type": "text",
-                    "text": "⚠️ Ocurrió un error inesperado. Puedes escribirnos directamente por WhatsApp."
-                }]
-            }
-        )
+        return {
+            "messages": [{
+                "type": "text",
+                "text": "⚠️ Ocurrió un error inesperado. Puedes escribirnos directamente por WhatsApp."
+            }]
+        }
 
-# Health Check para Render
+# Health check para Render
 @app.get("/")
 async def health_check():
     return {"status": "active", "service": "Pijamas Shalom Bot"}
 
-# Keep-Alive endpoint
+# Endpoint keep-alive
 @app.get("/keep-alive")
 async def keep_alive():
     return {"status": "keep-alive triggered"}
