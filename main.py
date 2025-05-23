@@ -1,5 +1,7 @@
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
+from fastapi.templating import Jinja2Templates
 import requests
 import os
 from dotenv import load_dotenv
@@ -8,6 +10,10 @@ from dotenv import load_dotenv
 load_dotenv()
 
 app = FastAPI()
+
+# Configuración de archivos estáticos y plantillas
+app.mount("/static", StaticFiles(directory="static"), name="static")
+templates = Jinja2Templates(directory="templates")
 
 # Configuración
 API_KEY = os.getenv("API_KEY")
@@ -44,20 +50,23 @@ Si alguien pregunta sobre algo que no tenga que ver con Pijamas Shalom, responde
 "¿En qué más puedo ayudarte sobre nuestros pijamas? 😊"
 """
 
+# Ruta principal para la interfaz web
+@app.get("/", response_class=HTMLResponse)
+async def chat_interface(request: Request):
+    return templates.TemplateResponse("chat.html", {"request": request, "whatsapp_url": WHATSAPP_URL})
 
-@app.post("/manychat-webhook")
-async def handle_manychat(request: Request):
+# Endpoint para el chatbot (reemplaza ManyChat)
+@app.post("/api/chat")
+async def handle_chat(request: Request):
     try:
         data = await request.json()
         user_message = data.get("message", "").strip()
 
         if not user_message:
-            return {
-                "messages": [{
-                    "type": "text",
-                    "text": "🔍 Por favor envía un mensaje válido."
-                }]
-            }
+            return JSONResponse(
+                content={"response": "🔍 Por favor envía un mensaje válido."},
+                status_code=400
+            )
 
         # Llamar a DeepSeek
         response = requests.post(
@@ -82,43 +91,31 @@ async def handle_manychat(request: Request):
         response.raise_for_status()
         ai_response = response.json()["choices"][0]["message"]["content"]
 
-        # RESPUESTA SIN JSONResponse → compatible con ManyChat
-        return {
-            "messages": [
-                {
-                    "type": "text",
-                    "text": ai_response[:1500]
-                }
-            ]
-        }
+        return JSONResponse(
+            content={"response": ai_response[:1500]},
+            status_code=200
+        )
 
     except requests.exceptions.Timeout:
-        return {
-            "messages": [{
-                "type": "text",
-                "text": "⏳ El servicio está ocupado. Intenta más tarde o contáctanos por WhatsApp."
-            }]
-        }
+        return JSONResponse(
+            content={"response": "⏳ El servicio está ocupado. Intenta más tarde o contáctanos por WhatsApp."},
+            status_code=408
+        )
 
     except requests.exceptions.RequestException:
-        return {
-            "messages": [{
-                "type": "text",
-                "text": "🔴 No pudimos procesar tu solicitud. Escríbenos por WhatsApp."
-            }]
-        }
+        return JSONResponse(
+            content={"response": "🔴 No pudimos procesar tu solicitud. Escríbenos por WhatsApp."},
+            status_code=500
+        )
 
     except Exception:
-        return {
-            "messages": [{
-                "type": "text",
-                "text": "⚠️ Ocurrió un error inesperado. Puedes escribirnos por WhatsApp."
-            }]
-        }
-
+        return JSONResponse(
+            content={"response": "⚠️ Ocurrió un error inesperado. Puedes escribirnos por WhatsApp."},
+            status_code=500
+        )
 
 # Health Check para Render
-@app.get("/")
+@app.get("/health")
 async def health_check():
     return {"status": "active", "service": "Pijamas Shalom Bot"}
 
