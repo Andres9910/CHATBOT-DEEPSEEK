@@ -135,55 +135,101 @@ async def chat_interface(request: Request):
         "store_location": STORE_LOCATION
     })
 
+# Versión corregida del endpoint /api/chat
 @app.post("/api/chat")
 async def handle_chat(request: Request):
     try:
+        # Verificar conexión con la API primero
+        api_status = await check_api_connection()
+        if not api_status:
+            return JSONResponse(
+                content={"response": "⚠️ Estamos mejorando nuestro servicio. Por favor escríbenos por WhatsApp para resolver tu consulta al instante."},
+                status_code=200
+            )
+
         data = await request.json()
         user_message = data.get("message", "").strip()
         
         if not user_message:
-            raise HTTPException(status_code=400, detail="Mensaje vacío")
-        
-        logger.info(f"Consulta recibida: {user_message}")
-        
-        messages = [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_message}
-        ]
-        
-        # Verificar si es consulta sobre productos
-        if any(keyword in user_message.lower() for keyword in ["precio", "cuesta", "valor", "producto"]):
-            messages.insert(1, {
-                "role": "system", 
-                "content": "Recuerda mencionar siempre: 1) Precio con formato $XX,XXX COP, 2) Tallas disponibles, 3) Enlace a WhatsApp"
-            })
-        
-        api_response = await call_ai_api(messages)
-        
-        if not api_response.get("choices"):
-            raise ValueError("Respuesta inesperada de la API")
-        
-        ai_response = api_response["choices"][0]["message"]["content"]
-        logger.info(f"Respuesta generada: {ai_response[:200]}...")
-        
-        return JSONResponse({
-            "response": ai_response[:1500],
-            "suggestions": ["Ver fotos", "Consultar talla", "Métodos de pago"]
-        })
-        
-    except HTTPException as he:
-        logger.warning(f"Error controlado: {str(he)}")
-        return JSONResponse(
-            content={"response": "🔍 Por favor envía un mensaje válido"},
-            status_code=he.status_code
+            return JSONResponse(
+                content={"response": "🔍 Por favor envía un mensaje válido"},
+                status_code=400
+            )
+
+        # Respuestas rápidas para preguntas frecuentes
+        quick_responses = {
+            "qué tallas tienen": "📏 Tenemos tallas para mujer (XS-XL), hombre (S-XL) y niños (4-16). ¿Para quién necesitas la talla?",
+            "cuánto cuesta": "💰 Nuestros pijamas van desde $30,000 COP. ¿Te interesa para mujer, hombre o niños?",
+            "hacen envíos": "🚚 ¡Sí! Envíos a Cúcuta $5,000 (24h) y nacional $15,000 (2-3 días). [WhatsApp](https://w.app/ogzaqz)"
+        }
+
+        # Buscar coincidencia en preguntas frecuentes
+        lower_msg = user_message.lower()
+        for question, answer in quick_responses.items():
+            if question in lower_msg:
+                return JSONResponse(content={"response": answer})
+
+        # Si no es pregunta frecuente, llamar a la API
+        payload = {
+            "model": "deepseek-chat",
+            "messages": [
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": user_message}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 300
+        }
+
+        response = requests.post(
+            ENDPOINT,
+            headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
+            json=payload,
+            timeout=10
         )
-        
+
+        if response.status_code == 200:
+            ai_response = response.json()["choices"][0]["message"]["content"]
+            return JSONResponse(content={"response": ai_response})
+        else:
+            # Respuesta alternativa si falla la API pero no la conexión
+            alternative_responses = {
+                "talla": "📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [WhatsApp](https://w.app/ogzaqz)",
+                "precio": "💰 Pijamas desde $30,000 COP. ¡Contamos con promociones! ¿Para quién buscas?",
+                "envío": "🚚 Envíos a todo Colombia. Cúcuta $5,000, otras ciudades $15,000 COP"
+            }
+            
+            for keyword, resp in alternative_responses.items():
+                if keyword in lower_msg:
+                    return JSONResponse(content={"response": resp})
+            
+            return JSONResponse(
+                content={"response": f"📢 Nuestro asistente está ocupado. Para respuesta inmediata escríbenos por [WhatsApp](https://w.app/ogzaqz)"},
+                status_code=200
+            )
+
     except Exception as e:
-        logger.error(f"Error inesperado: {str(e)}")
+        logging.error(f"Error en chat: {str(e)}")
         return JSONResponse(
-            content={"response": f"⚠️ Error temporal. Contáctanos por [WhatsApp]({WHATSAPP_URL}) para atención inmediata."},
+            content={"response": "¡Vaya! Algo salió mal. ¿Quieres consultar sobre precios, tallas o envíos?"},
             status_code=200
         )
+
+async def check_api_connection():
+    try:
+        test_payload = {
+            "model": "deepseek-chat",
+            "messages": [{"role": "user", "content": "test"}],
+            "max_tokens": 5
+        }
+        response = requests.post(
+            ENDPOINT,
+            headers={"Authorization": f"Bearer {API_KEY}"},
+            json=test_payload,
+            timeout=5
+        )
+        return response.status_code == 200
+    except:
+        return False
 
 # Endpoint para obtener productos (puede usarse para mostrar catálogo)
 @app.get("/api/products")
