@@ -214,13 +214,12 @@ async def handle_chat(request: Request):
             status_code=200
         )
 
-# filepath: vscode-vfs://github/Andres9910/CHATBOT-DEEPSEEK/main.py
 async def check_api_connection():
     try:
         test_payload = {
             "model": "deepseek-chat",
             "messages": [{"role": "user", "content": "test"}],
-            "max_tokens": 5
+            "max_tokens": 500
         }
         response = requests.post(
             ENDPOINT,
