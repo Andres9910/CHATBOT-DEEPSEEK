@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Chatbot Pijamas Shalom</title>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -144,16 +144,12 @@
             messageDiv.classList.add(isUser ? "user-message" : "bot-message");
             
             // Procesar enlaces y formato especial
-            const replacedText = text.replace(
+            const processedText = text.replace(
                 /\[WhatsApp\]\((.*?)\)/g, 
-                `[WhatsApp](${whatsappUrl})`
+                `<a href="${whatsappUrl}" class="whatsapp-link" target="_blank">WhatsApp</a>`
             );
-            const html = marked.parse(replacedText);
-            messageDiv.innerHTML = html;
             
-            
-            markdownToHtml = marked.parse(processedText);
-            messageDiv.innerHTML = markdownToHtml;
+            messageDiv.innerHTML = processedText;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
