@@ -3,220 +3,425 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chatbot Pijamas Shalom</title>
-    
+    <title>Pijamas Shalom - Asistente Virtual</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        :root {
+            --primary: #5D9C59;
+            --secondary: #DF2E38;
+            --light: #F5F5F5;
+            --dark: #333;
+            --whatsapp: #25D366;
+        }
+        
         body {
-            font-family: 'Arial', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f5f5f5;
+            background-color: #f9f9f9;
+            color: #333;
         }
+        
         .chat-container {
-            width: 90%;
-            max-width: 400px;
-            height: 90vh;
-            max-height: 600px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            background: white;
+            width: 100%;
+            max-width: 450px;
+            height: 100vh;
+            margin: 0 auto;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-        .chat-header {
-            background: #4CAF50;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            border-radius: 10px 10px 0 0;
+            background: white;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
             position: relative;
+            overflow: hidden;
         }
+        
+        .chat-header {
+            background: var(--primary);
+            color: white;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+        
+        .logo {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+        }
+        
+        .header-text {
+            flex: 1;
+        }
+        
+        .header-text h2 {
+            margin: 0;
+            font-size: 1.2rem;
+        }
+        
+        .header-text p {
+            margin: 3px 0 0;
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+        
         .chat-messages {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
+            background: url('https://example.com/pijama-pattern.png') center/cover;
+            background-color: #f5f5f5;
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 12px;
         }
+        
         .message {
-            margin-bottom: 10px;
-            padding: 10px 15px;
-            border-radius: 15px;
-            max-width: 85%;
+            max-width: 80%;
+            padding: 12px 16px;
+            border-radius: 18px;
             line-height: 1.4;
             word-wrap: break-word;
+            position: relative;
+            animation: fadeIn 0.3s ease;
         }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bot-message {
+            background: white;
+            align-self: flex-start;
+            border-bottom-left-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            border: 1px solid #eee;
+        }
+        
         .user-message {
-            background: #e3f2fd;
+            background: var(--primary);
+            color: white;
             align-self: flex-end;
-            margin-left: auto;
             border-bottom-right-radius: 5px;
         }
-        .bot-message {
-            background: #f1f1f1;
-            align-self: flex-start;
-            margin-right: auto;
-            border-bottom-left-radius: 5px;
-        }
-        .chat-input {
+        
+        .quick-replies {
             display: flex;
-            padding: 10px;
-            border-top: 1px solid #eee;
-            background: #f9f9f9;
-            border-radius: 0 0 10px 10px;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
         }
+        
+        .quick-reply {
+            background: rgba(255,255,255,0.9);
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .quick-reply:hover {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        
+        .typing-indicator {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            padding: 10px 15px;
+            background: white;
+            border-radius: 20px;
+            align-self: flex-start;
+            margin-bottom: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            display: none;
+        }
+        
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            background: #aaa;
+            border-radius: 50%;
+            animation: typingAnimation 1.4s infinite ease-in-out;
+        }
+        
+        .typing-dot:nth-child(1) { animation-delay: 0s; }
+        .typing-dot:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dot:nth-child(3) { animation-delay: 0.4s; }
+        
+        @keyframes typingAnimation {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-5px); }
+        }
+        
+        .chat-input-container {
+            padding: 15px;
+            background: white;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        
         #user-input {
             flex: 1;
             padding: 12px 15px;
             border: 1px solid #ddd;
-            border-radius: 20px;
+            border-radius: 25px;
             outline: none;
             font-size: 14px;
+            transition: border 0.3s;
         }
+        
+        #user-input:focus {
+            border-color: var(--primary);
+        }
+        
         #send-button {
-            margin-left: 10px;
-            padding: 0 20px;
-            background: #4CAF50;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            background: var(--primary);
             color: white;
             border: none;
-            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            font-weight: bold;
             transition: background 0.3s;
         }
+        
         #send-button:hover {
-            background: #45a049;
+            background: #4a8c48;
         }
-        .whatsapp-link {
-            color: #25D366;
+        
+        .whatsapp-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--whatsapp);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            z-index: 100;
             text-decoration: none;
+            font-size: 30px;
+        }
+        
+        .product-card {
+            border: 1px solid #eee;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .product-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+        
+        .product-info {
+            padding: 10px;
+            background: white;
+        }
+        
+        .product-title {
+            font-weight: bold;
+            margin: 0 0 5px;
+        }
+        
+        .product-price {
+            color: var(--secondary);
             font-weight: bold;
         }
-        .typing-indicator {
-            display: none;
-            padding: 10px;
+        
+        .suggestions-title {
+            font-size: 0.9rem;
             color: #666;
-            font-style: italic;
+            margin: 15px 0 5px;
+        }
+        
+        /* Responsive */
+        @media (max-width: 480px) {
+            .chat-container {
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h2 style="margin: 0;">Asistente de Pijamas Shalom</h2>
-            <small style="opacity: 0.8;">Estamos en línea</small>
-        </div>
-        <div class="chat-messages" id="chat-messages">
-            <div class="bot-message message">
-                ¡Hola! 👋 Soy tu asistente de Pijamas Shalom. ¿En qué puedo ayudarte hoy? Puedes preguntarme sobre:
-                <ul style="margin: 5px 0 0 15px; padding-left: 15px;">
-                    <li>Tipos de pijamas</li>
-                    <li>Tallas disponibles</li>
-                    <li>Precios y promociones</li>
-                    <li>Métodos de envío</li>
-                </ul>
+            <img src="https://example.com/logo-pijamas-shalom.png" alt="Logo" class="logo">
+            <div class="header-text">
+                <h2>Pijamas Shalom</h2>
+                <p>Asistente virtual • En línea</p>
             </div>
         </div>
-        <div class="typing-indicator" id="typing-indicator">El asistente está escribiendo...</div>
-        <div class="chat-input">
-            <input type="text" id="user-input" placeholder="Escribe tu pregunta..." autocomplete="off">
-            <button id="send-button">Enviar</button>
+        
+        <div class="chat-messages" id="chat-messages">
+            <div class="bot-message message">
+                <p>¡Hola! 👋 Soy tu asistente de <strong>Pijamas Shalom</strong>. Estoy aquí para ayudarte con:</p>
+                <ul style="margin: 10px 0 0 20px; padding-left: 15px;">
+                    <li>Información sobre nuestros productos</li>
+                    <li>Guía de tallas y materiales</li>
+                    <li>Precios y promociones</li>
+                    <li>Métodos de pago y envío</li>
+                </ul>
+                
+                <p class="suggestions-title">Puedes preguntarme cosas como:</p>
+                <div class="quick-replies">
+                    <div class="quick-reply">¿Qué tallas tienen?</div>
+                    <div class="quick-reply">¿Cuánto cuesta un pijama?</div>
+                    <div class="quick-reply">¿Hacen envíos?</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="typing-indicator" id="typing-indicator">
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <div class="typing-dot"></div>
+            <span>Escribiendo...</span>
+        </div>
+        
+        <div class="chat-input-container">
+            <input type="text" id="user-input" placeholder="Escribe tu mensaje..." autocomplete="off">
+            <button id="send-button">
+                <i class="fas fa-paper-plane"></i>
+            </button>
         </div>
     </div>
+    
+    <a href="https://w.app/ogzaqz" class="whatsapp-button" target="_blank">
+        <i class="fab fa-whatsapp"></i>
+    </a>
 
     <script>
-        const chatMessages = document.getElementById("chat-messages");
-        const userInput = document.getElementById("user-input");
-        const sendButton = document.getElementById("send-button");
-        const typingIndicator = document.getElementById("typing-indicator");
-        const whatsappUrl = "https://w.app/ogzaqz";
-
-        // Función mejorada para mostrar mensajes
+        const chatMessages = document.getElementById('chat-messages');
+        const userInput = document.getElementById('user-input');
+        const sendButton = document.getElementById('send-button');
+        const typingIndicator = document.getElementById('typing-indicator');
+        const whatsappUrl = 'https://w.app/ogzaqz';
+        
+        // Respuestas rápidas
+        document.querySelectorAll('.quick-reply').forEach(button => {
+            button.addEventListener('click', () => {
+                userInput.value = button.textContent;
+                sendMessage();
+            });
+        });
+        
+        // Mostrar mensajes con formato mejorado
         function addMessage(text, isUser) {
-            const messageDiv = document.createElement("div");
-            messageDiv.classList.add("message");
-            messageDiv.classList.add(isUser ? "user-message" : "bot-message");
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
             
-            // Procesar enlaces y formato especial
-            const processedText = text.replace(
-                /\[WhatsApp\]\((.*?)\)/g, 
-                `<a href="${whatsappUrl}" class="whatsapp-link" target="_blank">WhatsApp</a>`
+            // Procesar formato especial
+            let processedText = text
+                .replace(/\[WhatsApp\]/g, `<a href="${whatsappUrl}" target="_blank" style="color: var(--whatsapp); font-weight: bold;">WhatsApp</a>`)
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+            
+            // Detectar precios
+            processedText = processedText.replace(/\$[\d,]+/g, match => 
+                `<span style="color: var(--secondary); font-weight: bold;">${match}</span>`
             );
             
             messageDiv.innerHTML = processedText;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-
-        // Función para mostrar/ocultar "escribiendo..."
+        
+        // Indicador de "escribiendo"
         function setTyping(visible) {
-            typingIndicator.style.display = visible ? "block" : "none";
+            typingIndicator.style.display = visible ? 'flex' : 'none';
             chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-
-        // Función mejorada para enviar mensajes
+        
+        // Enviar mensaje al backend
         async function sendMessage() {
             const message = userInput.value.trim();
             if (!message) return;
-
+            
             addMessage(message, true);
-            userInput.value = "";
+            userInput.value = '';
             setTyping(true);
-
+            
             try {
-                const response = await fetch("/api/chat", {
-                    method: "POST",
+                const response = await fetch('/api/chat', {
+                    method: 'POST',
                     headers: {
-                        "Content-Type": "application/json",
+                        'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({ message }),
                 });
-
-                if (!response.ok) {
-                    throw new Error(`Error ${response.status}`);
-                }
-
+                
+                if (!response.ok) throw new Error('Error en la respuesta');
+                
                 const data = await response.json();
                 addMessage(data.response, false);
                 
+                // Mostrar sugerencias después de ciertas respuestas
+                if (data.response.toLowerCase().includes('talla') || 
+                    data.response.toLowerCase().includes('tallas')) {
+                    showSizeGuide();
+                }
+                
             } catch (error) {
-                console.error("Error:", error);
+                console.error('Error:', error);
                 addMessage(
-                    `🚀 Para atención inmediata, escríbenos por <a href="${whatsappUrl}" class="whatsapp-link" target="_blank">WhatsApp</a>`, 
+                    `⚠️ Hubo un error al procesar tu mensaje. Para atención inmediata, contáctanos por <a href="${whatsappUrl}" target="_blank" style="color: var(--whatsapp); font-weight: bold;">WhatsApp</a>.`,
                     false
                 );
             } finally {
                 setTyping(false);
             }
         }
-
-        // Event listeners mejorados
-        sendButton.addEventListener("click", sendMessage);
         
-        userInput.addEventListener("keypress", (e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
+        // Mostrar guía de tallas
+        function showSizeGuide() {
+            setTimeout(() => {
+                const sizeGuide = document.createElement('div');
+                sizeGuide.className = 'bot-message message';
+                sizeGuide.innerHTML = `
+                    <p><strong>📏 Guía de Tallas Recomendada:</strong></p>
+                    <img src="https://example.com/guia-tallas-pijamas.jpg" alt="Guía de tallas" style="width:100%; border-radius:8px; margin:10px 0;">
+                    <p>¿Necesitas ayuda para elegir tu talla? <a href="${whatsappUrl}" target="_blank" style="color: var(--whatsapp); font-weight: bold;">Escríbenos</a> con tus medidas.</p>
+                `;
+                chatMessages.appendChild(sizeGuide);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }, 500);
+        }
+        
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        userInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendMessage();
         });
-
-        // Enfocar automáticamente el input al cargar
-        window.addEventListener("load", () => {
+        
+        // Enfocar input al cargar
+        window.addEventListener('load', () => {
             userInput.focus();
         });
-
-        // Mejorar experiencia en móviles
-        if (/Mobi|Android/i.test(navigator.userAgent)) {
-            document.querySelector('.chat-container').style.height = '100vh';
-            document.querySelector('.chat-container').style.maxHeight = 'none';
-            document.querySelector('.chat-container').style.borderRadius = '0';
-        }
     </script>
 </body>
 </html>
