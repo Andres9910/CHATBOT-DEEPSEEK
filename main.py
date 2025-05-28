@@ -80,7 +80,7 @@ Responde de manera clara, amable y profesional siguiendo esta estructura:
    "📌 Conjunto de pijama para mujer: **$45,000 COP**  
    🔹 Tallas: XS a XL  
    🔹 Material: 100% algodón  
-   📞 ¿Te gustaría ver fotos? [WhatsApp]({WHATSAPP_URL})"
+   <a href='{WHATSAPP_URL}' target='_blank' style='display:inline-block;background:#25d366;color:#fff;padding:10px 18px;border-radius:6px;text-decoration:none;font-weight:bold;'><i class='fab fa-whatsapp'></i> WhatsApp</a>"
 
 3. Para preguntas fuera de tema:
    "Actualmente solo puedo ayudarte con información sobre pijamas. ¿Te interesa saber sobre [tema relacionado]?"

@@ -378,11 +378,11 @@
                 if (!response.ok) {
                     // Mostrar respuestas alternativas según el tipo de pregunta
                     if (message.toLowerCase().includes('talla')) {
-                        addMessage('📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [WhatsApp](https://w.app/ogzaqz)', false);
+                        addMessage('📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [WhatsApp](https://wa.me/573004413069)', false);
                     } else if (message.toLowerCase().includes('precio') || message.toLowerCase().includes('cuesta')) {
                         addMessage('💰 Nuestros pijamas van desde $30,000 COP. ¿Te interesa para mujer, hombre o niños?', false);
                     } else if (message.toLowerCase().includes('envío') || message.toLowerCase().includes('envios')) {
-                        addMessage('🚚 ¡Sí! Envíos a Cúcuta $5,000 (24h) y nacional $15,000 (2-3 días). [WhatsApp](https://w.app/ogzaqz)', false);
+                        addMessage('🚚 ¡Sí! Envíos a Cúcuta $5,000 (24h) y nacional $15,000 (2-3 días). [WhatsApp](https://wa.me/573004413069)', false);
                     } else {
                         addMessage('📢 ¿En qué más puedo ayudarte? Puedes preguntar sobre: precios, tallas o envíos', false);
                     }
@@ -394,7 +394,7 @@
                 
             } catch (error) {
                 console.error('Error:', error);
-                addMessage('⚠️ Estamos mejorando nuestro servicio. ¿Quieres contactarnos por <a href="https://w.app/ogzaqz" target="_blank">WhatsApp</a> para una respuesta inmediata?', false);
+                addMessage('⚠️ Estamos mejorando nuestro servicio. ¿Quieres contactarnos por <a href="https://wa.me/573004413069" target="_blank">WhatsApp</a> para una respuesta inmediata?', false);
             } finally {
                 setTyping(false);
             }
