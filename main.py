@@ -214,6 +214,7 @@ async def handle_chat(request: Request):
             status_code=200
         )
 
+# filepath: vscode-vfs://github/Andres9910/CHATBOT-DEEPSEEK/main.py
 async def check_api_connection():
     try:
         test_payload = {
@@ -227,8 +228,11 @@ async def check_api_connection():
             json=test_payload,
             timeout=5
         )
+        if response.status_code != 200:
+            logger.error(f"Deepseek API error: {response.status_code} - {response.text}")
         return response.status_code == 200
-    except:
+    except Exception as e:
+        logger.error(f"Deepseek API exception: {str(e)}")
         return False
 
 # Endpoint para obtener productos (puede usarse para mostrar catálogo)
