@@ -184,7 +184,7 @@ async def handle_chat(request: Request):
             ENDPOINT,
             headers={"Authorization": f"Bearer {API_KEY}", "Content-Type": "application/json"},
             json=payload,
-            timeout=10
+            timeout=30
         )
 
         if response.status_code == 200:
@@ -225,7 +225,7 @@ async def check_api_connection():
             ENDPOINT,
             headers={"Authorization": f"Bearer {API_KEY}"},
             json=test_payload,
-            timeout=5
+            timeout=30
         )
         if response.status_code != 200:
             logger.error(f"Deepseek API error: {response.status_code} - {response.text}")
