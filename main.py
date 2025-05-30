@@ -55,7 +55,7 @@ Responde de manera clara, amable y profesional siguiendo esta estructura:
 - **Ubicación**: {STORE_LOCATION}
 - **Métodos de pago**: 
   - Transferencias: Nequi/Daviplata #3016570792
-  - Efectivo (solo en tienda o contraentrega)
+  - Efectivo (solo en tienda)
 
 ### 🧺 **Catálogo de Productos** (Precios en COP):
 
