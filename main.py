@@ -229,7 +229,7 @@ async def handle_chat(request: Request):
             # Respuesta alternativa si falla la API pero no la conexión
             alternative_responses = {
                 "talla": "📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [WhatsApp](https://w.app/ogzaqz)",
-                "precio": "💰 Pijamas desde $30,000 COP. ¡Contamos con promociones! ¿Para quién buscas?",
+                "precio": "💰 Pijamas desde $30,000 COP. ¿Para quién buscas?",
                 "envío": "🚚 Envíos a todo Colombia. Cúcuta $5,000, otras ciudades $15,000 COP"
             }
             
