@@ -307,6 +307,7 @@
         const sendButton = document.getElementById('send-button');
         const typingIndicator = document.getElementById('typing-indicator');
         const whatsappUrl = 'https://wa.me/573004413069';
+        const tiendaUrl = 'https://shalompijamas.shop/';
         
         // Respuestas rápidas
         document.querySelectorAll('.quick-reply').forEach(button => {
@@ -320,18 +321,19 @@
         function addMessage(text, isUser) {
             const messageDiv = document.createElement('div');
             messageDiv.className = `message ${isUser ? 'user-message' : 'bot-message'}`;
-            
-            // Procesar formato especial
+
+            // Reemplaza [Tienda] por botón rosado
             let processedText = text
+                .replace(/\[Tienda\]/g, `<a href="${tiendaUrl}" target="_blank" style="display:inline-block;background:#FF9EB7;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;"><i class='fas fa-store'></i> Ver en tienda</a>`)
                 .replace(/\[WhatsApp\]/g, `<a href="${whatsappUrl}" target="_blank" style="color: var(--whatsapp); font-weight: bold;">WhatsApp</a>`)
                 .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
                 .replace(/\n/g, '<br>');
-            
+
             // Detectar precios
-            processedText = processedText.replace(/\$[\d,]+/g, match => 
+            processedText = processedText.replace(/\$[\d,]+/g, match =>
                 `<span style="color: var(--primary-dark); font-weight: bold;">${match}</span>`
             );
-            
+
             messageDiv.innerHTML = processedText;
             chatMessages.appendChild(messageDiv);
             chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -364,11 +366,11 @@
                 if (!response.ok) {
                     // Mostrar respuestas alternativas según el tipo de pregunta
                     if (message.toLowerCase().includes('talla')) {
-                        addMessage('📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [WhatsApp]('+whatsappUrl+')', false);
+                        addMessage('📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [Tienda]('+tiendaUrl+')', false);
                     } else if (message.toLowerCase().includes('precio') || message.toLowerCase().includes('cuesta')) {
                         addMessage('💰 Nuestros pijamas van desde $30,000 COP. ¿Te interesa para mujer, hombre o niños?', false);
                     } else if (message.toLowerCase().includes('envío') || message.toLowerCase().includes('envios')) {
-                        addMessage('🚚 ¡Sí! Envíos a Cúcuta y alerededores $5,000 (24h). [WhatsApp]('+whatsappUrl+')', false);
+                        addMessage('🚚 ¡Sí! Envíos a Cúcuta y alerededores $5,000 (24h). [Tienda]('+tiendaUrl+')', false);
                     } else {
                         addMessage('📢 ¿En qué más puedo ayudarte? Puedes preguntar sobre: precios, tallas o envíos', false);
                     }

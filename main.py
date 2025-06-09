@@ -24,6 +24,7 @@ templates = Jinja2Templates(directory="templates")
 API_KEY = os.getenv("DEEPSEEK_API_KEY")
 ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
 WHATSAPP_URL = "https://wa.me/573004413069"
+TIENDA_URL = "https://shalompijamas.shop/"
 STORE_LOCATION = "Calle 4N #7E-30, Barrio Los Pinos, Cúcuta"
 
 # Modelo de datos para productos
@@ -99,7 +100,7 @@ Responde de manera clara, amable y profesional siguiendo esta estructura:
 📌 [Producto]: [Precio]
 🔹 Tallas: [Lista exacta]
 🔹 Material: [Tipo de tela]
-<a href='{WHATSAPP_URL}' target='_blank' style='display:inline-block;background:#25d366;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fab fa-whatsapp'></i> Pedir por WhatsApp</a>
+<a href='{TIENDA_URL}' target='_blank' style='display:inline-block;background:#FF9EB7;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fas fa-store'></i> Ver en tienda</a>
 
 3. **Para preguntas fuera de tema**:
 "Como asistente especializada en pijamas, solo puedo ayudarte con información sobre nuestros productos. ¿Quieres saber sobre [sugerir tema relacionado]?"
@@ -118,7 +119,7 @@ Responde de manera clara, amable y profesional siguiendo esta estructura:
 "📌 Conjunto de pijama para niña (Short + Blusa): **$25,000 COP**  
 🔹 Tallas disponibles: 4, 6, 8, 10, 12, 14, 16  
 🔹 Material: Franela Doble Punto (suave y abrigada)  
-<a href='{WHATSAPP_URL}' target='_blank' style='display:inline-block;background:#25d366;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fab fa-whatsapp'></i> Pedir este modelo</a>"
+<a href='{TIENDA_URL}' target='_blank' style='display:inline-block;background:#FF9EB7;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fas fa-store'></i> Ver en tienda</a>"
 """
 
 # Función mejorada con reintentos y logging
