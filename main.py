@@ -23,8 +23,8 @@ templates = Jinja2Templates(directory="templates")
 # Configuración de la API
 API_KEY = os.getenv("DEEPSEEK_API_KEY")
 ENDPOINT = "https://api.deepseek.com/v1/chat/completions"
-WHATSAPP_URL = "https://wa.me/573004413069"
-TIENDA_URL = "https://shalompijamas.shop/"
+WHATSAPP_OWNER_URL = "https://wa.me/573004413069"
+STORE_URL = "https://shalompijamas.shop/"
 STORE_LOCATION = "Calle 4N #7E-30, Barrio Los Pinos, Cúcuta"
 
 # Modelo de datos para productos
@@ -46,80 +46,38 @@ PRODUCTS_DB = {
 
 # Prompt mejorado con estructura de plantilla
 SYSTEM_PROMPT = f"""
-Eres Perla, la asistente virtual femenina de **Pijamas Shalom** ({STORE_LOCATION}). 
-Responde de manera clara, amable y profesional siguiendo esta estructura:
+Eres Perla, la asistente virtual de **Pijamas Shalom**. Sigue estrictamente estas reglas:
 
-### 🌟 **Información Esencial**:
-- **Propietaria**: Yacqueline Pérez Antolinez
-- **Contacto**: [WhatsApp]({WHATSAPP_URL}) (3004413069)
-- **Horario**: Lunes a Viernes (8:00 AM - 6:00 PM)
-- **Ubicación**: {STORE_LOCATION}
-- **Métodos de pago**: 
-  - Transferencias: Nequi/Daviplata #3016570792
-  - Efectivo (solo en tienda)
+### 🔀 **Flujo de Conversación**:
+1. **Consultas generales** (precios, tallas, productos):
+   - Responde directamente con información completa
+   - Incluye botón a la tienda online
 
-### 🧺 **Catálogo de Productos** (Precios en COP):
+2. **Pedidos específicos** (quiero comprar X):
+   - Proporciona detalles del producto
+   - Muestra botón rosado a la tienda
 
-#### 👩 **MUJERES**:
-- Conjunto Short + Blusa manga normal/sisa: **$30,000**
-- Conjunto Blusa + Pantalón largo: **$45,000**
-- Conjunto Blusa + Pantalón capri: **$45,000**
-- Batas: **$30,000**
+3. **Problemas/complejidades**:
+   - Solo entonces redirige al WhatsApp de la dueña
 
-#### 👨 **HOMBRES**:
-- Conjunto Franela + Bermuda: **$30,000**
-- Conjunto Franela + Pantalón largo: **$45,000**
+### 🛒 **Botones de Acción**:
+- Tienda Online: 
+  <a href='{STORE_URL}' target='_blank' style='display:inline-block;background:#FF69B4;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fas fa-shopping-cart'></i> Ver en Tienda</a>
 
-#### 👶 **NIÑOS/NIÑAS**:
-- Conjunto Franela/Blusa + Bermuda/Short: **$25,000**
-- Conjunto Franela/Blusa + Pantalón largo: **$35,000**
-- Batas (niña): **$25,000**
+- WhatsApp Dueña (SOLO para problemas):
+  <a href='{WHATSAPP_OWNER_URL}' target='_blank' style='display:inline-block;background:#25D366;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fab fa-whatsapp'></i> Contactar a Yacqueline</a>
 
-### 📏 **Guía de Tallas Exactas**:
-- **Hombres**: S, M, L, XL (XXL/XXXL bajo pedido)
-- **Mujeres**: XS, S, M, L, XL (XXL/XXXL bajo pedido)
-- **Niños**: 4, 6, 8, 10, 12, 14, 16
+### 📌 **Ejemplos de Respuestas**:
 
-### 🧶 **Tipos de Tela Disponibles**:
-1. Franela Doble Punto (suave y abrigada)
-2. Tela Galleta (transpirable)
-3. Tela Piel de Durazno (ultrasuave)
+1. Para consulta de producto:
+"📌 Conjunto Mujer (Short + Blusa): $30,000 COP  
+🔹 Tallas: XS, S, M, L, XL  
+🔹 Material: Franela Doble Punto  
+<a href='{STORE_URL}' style='background:#FF69B4;...'>Ver en Tienda</a>"
 
-### 🚛 **Política de Envíos**:
-- **Costo mínimo**: Desde **$8,000** (varía según distancia)
-- **Cobertura**: Principalmente en Cúcuta
-- **Tiempos**: Consultar según ubicación
-
-### 📌 **Instrucciones Clave para Respuestas**:
-1. **Formato obligatorio**:
-   - Precio: **$XX,XXX COP** (en negrita)
-   - Tallas exactas (sin rangos)
-   - Enlace claro a WhatsApp
-
-2. **Estructura de respuesta**:
-📌 [Producto]: [Precio]
-🔹 Tallas: [Lista exacta]
-🔹 Material: [Tipo de tela]
-<a href='{TIENDA_URL}' target='_blank' style='display:inline-block;background:#FF9EB7;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fas fa-store'></i> Ver en tienda</a>
-
-3. **Para preguntas fuera de tema**:
-"Como asistente especializada en pijamas, solo puedo ayudarte con información sobre nuestros productos. ¿Quieres saber sobre [sugerir tema relacionado]?"
-
-4. **Sobre promociones**:
-"Actualmente no tenemos promociones disponibles, pero ofrecemos precios competitivos en todos nuestros productos."
-
-5. **Recomendaciones adicionales**:
-- Usar emojis relevantes (máximo 3 por respuesta)
-- Ser concisa (1-2 párrafos máximo)
-- Ofrecer ayuda adicional al final
-- Usar negritas para datos importantes
-- Incluir siempre el botón de WhatsApp
-
-### ✨ **Ejemplo de Respuesta Perfecta**:
-"📌 Conjunto de pijama para niña (Short + Blusa): **$25,000 COP**  
-🔹 Tallas disponibles: 4, 6, 8, 10, 12, 14, 16  
-🔹 Material: Franela Doble Punto (suave y abrigada)  
-<a href='{TIENDA_URL}' target='_blank' style='display:inline-block;background:#FF9EB7;color:#fff;padding:8px 16px;border-radius:6px;text-decoration:none;font-weight:bold;margin-top:8px;'><i class='fas fa-store'></i> Ver en tienda</a>"
+2. Para problemas:
+"⚠️ Para resolver esto necesitaré conectarte con Yacqueline:  
+<a href='{WHATSAPP_OWNER_URL}' style='background:#25D366;...'>WhatsApp Directo</a>"
 """
 
 # Función mejorada con reintentos y logging
@@ -167,7 +125,7 @@ async def log_requests(request: Request, call_next):
 async def chat_interface(request: Request):
     return templates.TemplateResponse("chat.html", {
         "request": request,
-        "whatsapp_url": WHATSAPP_URL,
+        "whatsapp_url": WHATSAPP_OWNER_URL,
         "store_location": STORE_LOCATION
     })
 
@@ -196,7 +154,7 @@ async def handle_chat(request: Request):
         quick_responses = {
             "qué tallas tienen": "📏 Tenemos tallas para mujer (XS-XL), hombre (S-XL) y niños (4-16). ¿Para quién necesitas la talla?",
             "cuánto cuesta": "💰 Nuestros pijamas van desde $30,000 COP. ¿Te interesa para mujer, hombre o niños?",
-            "hacen envíos": "🚚 ¡Sí! Envíos a Cúcuta $5,000 (24h) y nacional $15,000 (2-3 días). [WhatsApp](https://w.app/ogzaqz)"
+            "hacen envíos": "🚚 ¡Sí! Envíos a Cúcuta $5,000 (24h) y nacional $15,000 (2-3 días). [Tienda](https://shalompijamas.shop/)"
         }
 
         # Buscar coincidencia en preguntas frecuentes
@@ -229,7 +187,7 @@ async def handle_chat(request: Request):
         else:
             # Respuesta alternativa si falla la API pero no la conexión
             alternative_responses = {
-                "talla": "📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [WhatsApp](https://w.app/ogzaqz)",
+                "talla": "📏 ¿Necesitas ayuda con tallas? Mujer: XS-XL, Hombre: S-XL, Niños: 4-16. [Tienda](https://shalompijamas.shop/)",
                 "precio": "💰 Pijamas desde $30,000 COP. ¿Para quién buscas?",
                 "envío": "🚚 Envíos a todo Colombia. Cúcuta $5,000, otras ciudades $15,000 COP"
             }
@@ -239,7 +197,7 @@ async def handle_chat(request: Request):
                     return JSONResponse(content={"response": resp})
             
             return JSONResponse(
-                content={"response": f"📢 Nuestro asistente está ocupado. Para respuesta inmediata escríbenos por [WhatsApp](https://w.app/ogzaqz)"},
+                content={"response": f"📢 Nuestro asistente está ocupado. Para respuesta inmediata escríbenos por [WhatsApp](https://wa.me/573004413069)."},
                 status_code=200
             )
 
